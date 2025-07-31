@@ -1,0 +1,99 @@
+<?php
+
+/**
+ * @file
+ * The main module file.
+ */
+
+use Drupal\commerce_payment\Exception\PaymentGatewayException;
+use Drupal\commerce_revolut\Plugin\Commerce\PaymentGateway\RevolutCheckoutInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_library_info_alter().
+ */
+function commerce_revolut_library_info_alter(&$libraries, $extension): void {
+  if ($extension === 'commerce_revolut' && isset($libraries['revolut_js'])) {
+    /** @var \Drupal\commerce_payment\Entity\PaymentGatewayInterface[] $payment_gateway */
+    $payment_gateway = Drupal::entityTypeManager()
+      ->getStorage('commerce_payment_gateway')
+      ->loadByProperties(['status' => TRUE]);
+    foreach ($payment_gateway as $gateway) {
+      if (in_array($gateway->getPluginId(), ['revolut_pay', 'revolut_checkout'])) {
+        $mode = $gateway->getPlugin()->getMode();
+        if ($mode === 'test') {
+          unset($libraries['revolut_js']['js']['https://merchant.revolut.com/embed.js']);
+          $libraries['revolut_js']['js']['https://sandbox-merchant.revolut.com/embed.js']['minified'] = TRUE;
+          break;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function commerce_revolut_form_commerce_checkout_flow_alter(&$form, FormStateInterface $form_state, $form_id): void {
+  // Check if we are on a review step, and there is no payment pane on it.
+  if (!empty($form['#step_id']) && $form['#step_id'] === 'review') {
+    /** @var Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\MultistepDefault $checkout_flow */
+    $checkout_flow = $form_state->getFormObject();
+    $order = $checkout_flow->getOrder();
+
+    if (!$order->get('payment_method')->isEmpty()) {
+      /** @var \Drupal\commerce_payment\Entity\PaymentGatewayInterface $payment_gateway */
+      $payment_gateway = $order->get('payment_gateway')->entity;
+      $plugin = $payment_gateway->getPlugin();
+      if ($plugin instanceof RevolutCheckoutInterface) {
+        try {
+          $revolut_order = $plugin->putRevolutOrder($order);
+        }
+        catch (PaymentGatewayException $e) {
+          Drupal::messenger()->addError($e->getMessage());
+          return;
+        }
+
+        /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $payment_method */
+        $payment_method = $order->get('payment_method')->entity;
+        if (!$payment_method || !$payment_method->isReusable()) {
+          $plugin_definition = $payment_gateway->getPlugin()
+            ->getPluginDefinition();
+          $form['#attributes']['class'][] = 'revolut-form';
+          $form['#attached']['library'][] = $plugin_definition['js_library'];
+          $form['#attached']['library'][] = 'commerce_revolut/checkout';
+          $form['#attached']['drupalSettings']['commerceRevolut'] = [
+            'publicKey' => $plugin->getPublicKey(),
+            'mode' => $plugin->getRevolutMode(),
+            'order' => $revolut_order,
+            'token' => $revolut_order['token'],
+            'email' => $order->getEmail(),
+            'billing' => $order->getBillingProfile()?->get('address')?->first()?->toArray(),
+            'integration' => $plugin->getPluginId(),
+          ];
+          // Populated by the JS library.
+          $form['revolut_payment_method_id'] = [
+            '#type' => 'hidden',
+            '#attributes' => [
+              'id' => 'revolut-payment-method-id',
+            ],
+          ];
+
+          $form['revolut-integration'] = [
+            '#type' => 'item',
+            '#required' => TRUE,
+            '#validated' => TRUE,
+            '#markup' => '<div id="revolut-integration" class="form-text"></div>',
+          ];
+
+          // To display validation errors.
+          $form['payment_errors'] = [
+            '#type' => 'markup',
+            '#markup' => '<div id="payment-errors"></div>',
+            '#weight' => -200,
+          ];
+        }
+      }
+    }
+  }
+}

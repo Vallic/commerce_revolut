@@ -1,0 +1,8 @@
+name: Commerce Revolut
+type: module
+description: 'Provides Commerce integration for Revolut.'
+package: Commerce (contrib)
+core_version_requirement: ^10|^11
+dependencies:
+  - commerce_payment:commerce_payment
+  - commerce_order:commerce_order

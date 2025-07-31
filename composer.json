@@ -1,0 +1,14 @@
+{
+    "name": "drupal/commerce_revolut",
+    "type": "drupal-module",
+    "description": "Provides Commerce integration for Revolut.",
+    "homepage": "http://drupal.org/project/commerce_revolut",
+    "license": "GPL-2.0+",
+    "require": {
+        "drupal/core": "^10 || ^11",
+        "drupal/commerce": "^3"
+    },
+    "require-dev": {
+        "drupal/commerce_shipping": "^2"
+    }
+}

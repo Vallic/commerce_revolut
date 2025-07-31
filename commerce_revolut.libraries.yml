@@ -1,0 +1,24 @@
+revolut_js:
+  remote: https://github.com/revolut-engineering/revolut-checkout
+  version: "v.1.1.22"
+  license:
+    name: APACHE
+    url: https://github.com/revolut-engineering/revolut-checkout/blob/master/LICENSE
+    gpl-compatible: true
+  js:
+    "https://merchant.revolut.com/embed.js": { minified: true }
+
+checkout:
+  version: VERSION
+  js:
+    js/commerce_revolut.checkout.js:
+      attributes:
+        defer: true
+  css:
+    theme:
+      css/commerce_revolut.checkout.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+    - commerce_revolut/revolut_js
