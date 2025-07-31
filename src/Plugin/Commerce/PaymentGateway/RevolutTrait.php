@@ -21,7 +21,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Holds logic for all revolut availabile methods.
+ * Holds logic for all revolut available methods.
  */
 trait RevolutTrait {
 
