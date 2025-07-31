@@ -9,7 +9,7 @@ final class RevolutEvents {
    *
    * @Event
    *
-   * @see \Drupal\commerce_signifyd\Event\SignifydCreateCaseEvent
+   * @see \Drupal\commerce_revolut\Event\RevolutOrderEvent
    */
   const string REVOLUT_ORDER_PAYLOAD = 'revolut_order_payload';
 

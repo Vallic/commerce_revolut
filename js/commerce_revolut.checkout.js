@@ -125,7 +125,6 @@
             break;
 
           case 'revolut_pay':
-            /* global RevolutCheckout */
             const { revolutPay } = RevolutCheckout.payments({
               publicToken: drupalSettings.commerceRevolut.publicKey,
               mode: drupalSettings.commerceRevolut.mode,
