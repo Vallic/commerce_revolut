@@ -3,10 +3,7 @@
  * JavaScript to generate RevolutCheckout token in PCI-compliant way.
  */
 
-(function ( Drupal, drupalSettings) {
-
-  'use strict';
-
+(function (Drupal, drupalSettings) {
   /**
    * Handle error display.
    *
@@ -28,12 +25,15 @@
    * Attaches the commerceRevolut behavior.
    */
   Drupal.behaviors.commerceRevolut = {
-    attach: function (context) {
-      if (!drupalSettings.commerceRevolut || !drupalSettings.commerceRevolut.publicKey) {
+    attach(context) {
+      if (
+        !drupalSettings.commerceRevolut ||
+        !drupalSettings.commerceRevolut.publicKey
+      ) {
         return;
       }
 
-      const revolutForm  = document.querySelector('.revolut-form');
+      const revolutForm = document.querySelector('.revolut-form');
       if (revolutForm && !revolutForm.classList.contains('revolut-processed')) {
         revolutForm.classList.add('revolut-processed');
         const integrationType = drupalSettings.commerceRevolut.integration;
@@ -43,12 +43,17 @@
 
         switch (integrationType) {
           case 'revolut_checkout':
-            RevolutCheckout(drupalSettings.commerceRevolut.token, drupalSettings.commerceRevolut.mode).then(function (instance) {
+            RevolutCheckout(
+              drupalSettings.commerceRevolut.token,
+              drupalSettings.commerceRevolut.mode,
+            ).then(function (instance) {
               const card = instance.createCardField({
                 target: revolutForm.querySelector('#revolut-integration'),
                 onSuccess() {
-                  checkoutForm.querySelector('input.button--primary')?.setAttribute('disable', 'true');
-                  checkoutForm.submit()
+                  checkoutForm
+                    .querySelector('input.button--primary')
+                    ?.setAttribute('disable', 'true');
+                  checkoutForm.submit();
                 },
                 onError(error) {
                   revolutErrorHandling(checkoutForm, error.message ?? null);
@@ -56,18 +61,23 @@
                 onValidation(errors) {
                   let validationError = '';
                   for (const error of errors) {
-                    validationError += error.message + '</br>'
+                    validationError += `${error.message}</br>`;
                   }
                   revolutErrorHandling(checkoutForm, validationError);
                 },
                 onCancel() {
-                  revolutErrorHandling(checkoutForm, 'The payment was cancelled');
+                  revolutErrorHandling(
+                    checkoutForm,
+                    'The payment was cancelled',
+                  );
                 },
               });
 
               // Take over form submission
               checkoutForm.addEventListener('submit', (event) => {
-                const paymentMethodId = checkoutForm.querySelector('#revolut-payment-method-id');
+                const paymentMethodId = checkoutForm.querySelector(
+                  '#revolut-payment-method-id',
+                );
                 if (!paymentMethodId || paymentMethodId.length > 0) {
                   return true;
                 }
@@ -75,33 +85,39 @@
                 const formData = new FormData(checkoutForm);
 
                 const payload = {
-                  savePaymentMethodFor: 'merchant'
-                }
+                  savePaymentMethodFor: 'merchant',
+                };
 
                 // We have billing information.
                 if (billing) {
-                  payload.name = billing.given_name + ' ' + billing.family_name;
+                  payload.name = `${billing.given_name} ${billing.family_name}`;
                   payload.cardholderName = billing.name;
                   payload.billingAddress = {
-                    countryCode : billing.country_code,
-                    region : billing.administrative_area,
-                    city : billing.locality,
-                    postcode : billing.postal_code,
-                    streetLine1 : billing.address_line1,
+                    countryCode: billing.country_code,
+                    region: billing.administrative_area,
+                    city: billing.locality,
+                    postcode: billing.postal_code,
+                    streetLine1: billing.address_line1,
                   };
-                }
-                else {
-                  payload.name = formData.get('payment_information[add_payment_method][billing_information][address][0][address][given_name]') + ' ' + formData.get('payment_information[add_payment_method][billing_information][address][0][address][family_name]')
+                } else {
+                  payload.name = `${formData.get(
+                    'payment_information[add_payment_method][billing_information][address][0][address][given_name]',
+                  )} ${formData.get(
+                    'payment_information[add_payment_method][billing_information][address][0][address][family_name]',
+                  )}`;
                 }
 
-                email = email ?? formData.get('contact_information[email]')
+                email = email ?? formData.get('contact_information[email]');
 
                 if (email) {
                   payload.email = email;
                 }
 
                 card.submit(payload);
-                paymentMethodId.setAttribute('value', drupalSettings.commerceRevolut.order.id)
+                paymentMethodId.setAttribute(
+                  'value',
+                  drupalSettings.commerceRevolut.order.id,
+                );
               });
             });
 
@@ -111,20 +127,24 @@
             const { revolutPay } = RevolutCheckout.payments({
               publicToken: drupalSettings.commerceRevolut.publicKey,
               mode: drupalSettings.commerceRevolut.mode,
-            })
+            });
 
             const paymentOptions = {
               currency: drupalSettings.commerceRevolut.order.currency,
               totalAmount: drupalSettings.commerceRevolut.order.amount,
               // We can't just push existing token directly?.
               createOrder: async () => {
-                return { publicId: drupalSettings.commerceRevolut.token }
+                return { publicId: drupalSettings.commerceRevolut.token };
               },
-            }
+            };
 
-            checkoutForm.querySelector('input.button--primary')?.setAttribute('disabled', 'true');
+            checkoutForm
+              .querySelector('input.button--primary')
+              ?.setAttribute('disabled', 'true');
 
-            let revolutButton = document.getElementById('revolut-integration');
+            const revolutButton = document.getElementById(
+              'revolut-integration',
+            );
             if (!revolutButton.classList.contains('revolut-processed')) {
               revolutPay.mount(revolutButton, paymentOptions);
               revolutButton.classList.add('revolut-processed');
@@ -133,29 +153,36 @@
             revolutPay.on('payment', (event) => {
               switch (event.type) {
                 case 'cancel': {
-                  revolutErrorHandling(checkoutForm, 'The payment was cancelled')
-                  break
+                  revolutErrorHandling(
+                    checkoutForm,
+                    'The payment was cancelled',
+                  );
+                  break;
                 }
 
                 case 'success':
-                  const paymentMethodId = checkoutForm.querySelector('#revolut-payment-method-id');
-                  paymentMethodId.setAttribute('value', drupalSettings.commerceRevolut.order.id)
+                  const paymentMethodId = checkoutForm.querySelector(
+                    '#revolut-payment-method-id',
+                  );
+                  paymentMethodId.setAttribute(
+                    'value',
+                    drupalSettings.commerceRevolut.order.id,
+                  );
                   checkoutForm.submit();
-                  break
+                  break;
 
                 case 'error':
-                  revolutErrorHandling(checkoutForm, event.error)
-                  break
+                  revolutErrorHandling(checkoutForm, event.error);
+                  break;
               }
-            })
+            });
 
             break;
         }
       }
     },
 
-
-    detach: function (context, settings, trigger) {
+    detach(context, settings, trigger) {
       if (trigger !== 'unload') {
         return;
       }
@@ -163,10 +190,12 @@
       if (!form) {
         return;
       }
-      form.classList.remove('revolut-processed')
+      form.classList.remove('revolut-processed');
 
-      document.querySelector('.commerce-checkout-flow')?.querySelector('input.button--primary')?.removeAttribute('disabled');
+      document
+        .querySelector('.commerce-checkout-flow')
+        ?.querySelector('input.button--primary')
+        ?.removeAttribute('disabled');
     },
   };
-
 })(Drupal, drupalSettings);
