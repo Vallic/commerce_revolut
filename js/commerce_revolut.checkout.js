@@ -43,6 +43,7 @@
 
         switch (integrationType) {
           case 'revolut_checkout':
+            /* global RevolutCheckout */
             RevolutCheckout(
               drupalSettings.commerceRevolut.token,
               drupalSettings.commerceRevolut.mode,
@@ -124,6 +125,7 @@
             break;
 
           case 'revolut_pay':
+            /* global RevolutCheckout */
             const { revolutPay } = RevolutCheckout.payments({
               publicToken: drupalSettings.commerceRevolut.publicKey,
               mode: drupalSettings.commerceRevolut.mode,

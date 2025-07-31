@@ -9,6 +9,8 @@ use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\commerce_payment\Exception\InvalidRequestException;
 use Drupal\commerce_payment\Exception\PaymentGatewayException;
 use Drupal\commerce_price\Price;
+use Drupal\commerce_revolut\Event\RevolutEvents;
+use Drupal\commerce_revolut\Event\RevolutOrderEvent;
 use Drupal\commerce_revolut\Exception\RevolutException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Extension\ModuleExtensionList;
@@ -490,7 +492,11 @@ trait RevolutTrait {
 
     }
 
-    return $payload;
+    // Trigger the event.
+    $event = new RevolutOrderEvent($order, $payload);
+    $this->eventDispatcher->dispatch($event, RevolutEvents::REVOLUT_ORDER_PAYLOAD);
+
+    return $event->getPayload();
   }
 
   /**
