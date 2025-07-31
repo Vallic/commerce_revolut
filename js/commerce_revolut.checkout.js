@@ -47,7 +47,7 @@
               const card = instance.createCardField({
                 target: revolutForm.querySelector('#revolut-integration'),
                 onSuccess() {
-                  checkoutForm.querySelector('input.button--primary')?.setAttribute('disable', true);
+                  checkoutForm.querySelector('input.button--primary')?.setAttribute('disable', 'true');
                   checkoutForm.submit()
                 },
                 onError(error) {
@@ -74,7 +74,7 @@
                 event.preventDefault();
                 const formData = new FormData(checkoutForm);
 
-                let payload = {
+                const payload = {
                   savePaymentMethodFor: 'merchant'
                 }
 
@@ -122,7 +122,7 @@
               },
             }
 
-            checkoutForm.querySelector('input.button--primary')?.setAttribute('disabled', true);
+            checkoutForm.querySelector('input.button--primary')?.setAttribute('disabled', 'true');
 
             let revolutButton = document.getElementById('revolut-integration');
             if (!revolutButton.classList.contains('revolut-processed')) {
