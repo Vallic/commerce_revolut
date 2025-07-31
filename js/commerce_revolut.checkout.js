@@ -127,7 +127,7 @@
               mode: drupalSettings.commerceRevolut.mode,
             });
 
-            const { paymentOptions } = {
+            const paymentOptions = {
               currency: drupalSettings.commerceRevolut.order.currency,
               totalAmount: drupalSettings.commerceRevolut.order.amount,
               // We can't just push existing token directly?.
@@ -140,7 +140,7 @@
               .querySelector('input.button--primary')
               ?.setAttribute('disabled', 'true');
 
-            const { revolutButton } = document.getElementById(
+            const revolutButton = document.getElementById(
               'revolut-integration',
             );
             if (!revolutButton.classList.contains('revolut-processed')) {
@@ -159,7 +159,7 @@
                 }
 
                 case 'success':
-                  const { paymentMethodId } = checkoutForm.querySelector(
+                  const paymentMethodId = checkoutForm.querySelector(
                     '#revolut-payment-method-id',
                   );
                   paymentMethodId.setAttribute(
