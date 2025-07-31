@@ -5,9 +5,9 @@
 
 .revolut-form .payment-messages--error {
   color: #a51b00;
+  padding: 10px;
   border-width: 1px;
   border-color: #e62600;
-  padding: 10px;
   background-color: hsl(15, 75%, 97%);
   font-weight: bold;
 }

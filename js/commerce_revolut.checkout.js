@@ -14,13 +14,13 @@
    * @param {string|null} message
    */
   function revolutErrorHandling(checkoutForm, message) {
-    const payment_error = checkoutForm.querySelector('#payment-errors');
-    payment_error.innerHTML = '';
+    const paymentError = checkoutForm.querySelector('#payment-errors');
+    paymentError.innerHTML = '';
     if (message) {
       const errorWrapper = document.createElement('div');
       errorWrapper.classList.add('payment-messages', 'payment-messages--error');
       errorWrapper.innerHTML = message;
-      payment_error.append(errorWrapper);
+      paymentError.append(errorWrapper);
     }
   }
 
@@ -28,7 +28,6 @@
    * Attaches the commerceRevolut behavior.
    */
   Drupal.behaviors.commerceRevolut = {
-
     attach: function (context) {
       if (!drupalSettings.commerceRevolut || !drupalSettings.commerceRevolut.publicKey) {
         return;
@@ -67,8 +66,8 @@
               });
 
               // Take over form submission
-              checkoutForm.addEventListener("submit", (event) => {
-                let paymentMethodId = checkoutForm.querySelector('#revolut-payment-method-id');
+              checkoutForm.addEventListener('submit', (event) => {
+                const paymentMethodId = checkoutForm.querySelector('#revolut-payment-method-id');
                 if (!paymentMethodId || paymentMethodId.length > 0) {
                   return true;
                 }
@@ -139,7 +138,7 @@
                 }
 
                 case 'success':
-                  let paymentMethodId = checkoutForm.querySelector('#revolut-payment-method-id');
+                  const paymentMethodId = checkoutForm.querySelector('#revolut-payment-method-id');
                   paymentMethodId.setAttribute('value', drupalSettings.commerceRevolut.order.id)
                   checkoutForm.submit();
                   break
