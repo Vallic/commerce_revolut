@@ -332,7 +332,7 @@ trait RevolutTrait {
    * Method to process requests towards Revolut API.
    */
   protected function request(string $endpoint, string $method = 'GET', array $payload = []): array {
-    $endpoint_url = sprintf('%s/api/%s', $this->getRevolutMode() ? RevolutInterface::REVOLUT_SANDBOX_URL : RevolutInterface::REVOLUT_PRODUCTION_URL, $endpoint);
+    $endpoint_url = sprintf('%s/api/%s', $this->getRevolutMode() === 'sandbox' ? RevolutInterface::REVOLUT_SANDBOX_URL : RevolutInterface::REVOLUT_PRODUCTION_URL, $endpoint);
     $commerce_core = $this->moduleExtensionList->getExtensionInfo('commerce');
     try {
       $request_data = [
