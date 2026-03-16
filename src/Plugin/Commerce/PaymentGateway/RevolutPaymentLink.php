@@ -41,19 +41,18 @@ class RevolutPaymentLink extends OffsitePaymentGatewayBase implements RevolutInt
       throw new PaymentGatewayException('No payment found.');
     }
 
-    switch ($revolut_order['state']) {
-      case 'pending':
-        throw new PaymentGatewayException('Payment failed');
+    $state = RevolutInterface::REVOLUT_ORDER_STATES_MAPPED[$revolut_order['state']] ?? NULL;
 
-      case 'processing':
-        throw new PaymentGatewayException('Payment failed');
+    if (!$state || in_array($revolut_order['state'], ['cancelled', 'failed'])) {
+      throw new PaymentGatewayException('Payment failed');
     }
 
     $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
     /** @var \Drupal\commerce_payment\Entity\PaymentInterface $payment */
     $payment = $payment_storage->create([
-      'state' => $revolut_order['state'] === 'completed' ? 'completed' : 'pending',
+      'state' => $state,
       'amount' => $order->getBalance(),
+      'authorized' => $this->time->getRequestTime(),
       'payment_gateway' => $this->parentEntity->id(),
       'order_id' => $order->id(),
       'remote_id' => $revolut_order['id'],
